@@ -66,54 +66,15 @@
     #logo-frame {
       display: flex;
       align-items: center;
-      gap: 3px;
+      opacity: 0;
+      transition: opacity 1s ease;
     }
 
-    #color-blocks {
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      align-self: center;
-      transform: translateY(-1px);
-    }
-
-    .color-block {
-      width: 13px;
-      height: 4.3px;
-    }
-
-    #logo-text {
-      display: flex;
-      align-items: baseline;
-      gap: 2px;
-    }
-
-    #aigea-text {
-      font-family: 'Trajan Pro', serif;
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.04em;
-      color: #626262;
+    #aigea-logo {
+      height: 13px;
+      width: auto;
+      display: block;
       user-select: none;
-      line-height: 1;
-    }
-
-    #aigea-text span {
-      display: inline-block;
-    }
-
-    #dot-org-text {
-      font-family: 'Trajan Pro', serif;
-      font-size: 7px;
-      font-weight: 400;
-      letter-spacing: 0.04em;
-      color: #626262;
-      user-select: none;
-      line-height: 1;
-    }
-
-    #dot-org-text span {
-      display: inline-block;
     }
 
     #maintenance-line {
@@ -146,17 +107,8 @@
         font-size: 15px;
       }
 
-      .color-block {
-        width: 17px;
-        height: 5.6px;
-      }
-
-      #aigea-text {
-        font-size: 14px;
-      }
-
-      #dot-org-text {
-        font-size: 9px;
+      #aigea-logo {
+        height: 17px;
       }
 
       #maintenance-text {
@@ -175,15 +127,7 @@
 
   <div id="logo-wrapper">
     <div id="logo-frame">
-      <div id="color-blocks">
-        <div class="color-block" style="background:#3047b6;"></div>
-        <div class="color-block" style="background:#4766b4;"></div>
-        <div class="color-block" style="background:#898dd1;"></div>
-      </div>
-      <div id="logo-text">
-        <p id="aigea-text"></p>
-        <p id="dot-org-text"></p>
-      </div>
+      <img id="aigea-logo" src="AIGEA-S1.svg" alt="AIGEA" />
     </div>
 
     <div id="maintenance-line">
@@ -202,14 +146,11 @@
 
     const wordEl        = document.getElementById('word');
     const logoWrapperEl = document.getElementById('logo-wrapper');
-    const aigeaEl       = document.getElementById('aigea-text');
-    const dotOrgEl      = document.getElementById('dot-org-text');
+    const logoFrameEl   = document.getElementById('logo-frame');
     const maintenanceEl = document.getElementById('maintenance-line');
 
-    let wordSpans   = [];
-    let aigeaSpans  = [];
-    let dotOrgSpans = [];
-    let colorTimer  = null;
+    let wordSpans  = [];
+    let colorTimer = null;
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
@@ -283,6 +224,7 @@
     // ── show / hide ───────────────────────────────────────────────────────────
 
     function showWord() {
+      logoFrameEl.style.opacity   = '0';
       maintenanceEl.style.opacity = '0';
       logoWrapperEl.style.display = 'none';
       wordEl.style.display        = 'block';
@@ -306,15 +248,7 @@
       stopColor();
       showLogo();
 
-      // Both scramble with uppercase Trajan pool, color stays fixed at #626262
-      const aigeaDone  = scramble(aigeaEl, aigeaSpans, 'AIGEA', true, '#626262');
-      const dotOrgDone = new Promise(res => {
-        setTimeout(async () => { await scramble(dotOrgEl, dotOrgSpans, '.org', true, '#626262'); res(); }, 150);
-      });
-
-      await Promise.all([aigeaDone, dotOrgDone]);
-      // No color animation — logo stays #626262
-
+      logoFrameEl.style.opacity   = '1';
       maintenanceEl.style.opacity = '1';
     }
 

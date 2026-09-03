@@ -47,15 +47,24 @@
       letter-spacing: -0.02em;
       color: #131313;
       user-select: none;
+      text-align: center;
     }
 
     #word span {
       display: inline-block;
+      white-space: pre;
       transition: color 0.6s ease;
     }
 
-    #logo-frame {
+    #logo-wrapper {
       display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #logo-frame {
+      display: flex;
       align-items: center;
       gap: 3px;
     }
@@ -106,36 +115,96 @@
     #dot-org-text span {
       display: inline-block;
     }
+
+    #maintenance-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    #maintenance-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: #898988;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    #lse-logo {
+      height: 20px;
+      width: auto;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      #word {
+        font-size: 15px;
+      }
+
+      .color-block {
+        width: 17px;
+        height: 5.6px;
+      }
+
+      #aigea-text {
+        font-size: 14px;
+      }
+
+      #dot-org-text {
+        font-size: 9px;
+      }
+
+      #maintenance-text {
+        font-size: 11px;
+      }
+
+      #lse-logo {
+        height: 27px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <p id="word"></p>
 
-  <div id="logo-frame">
-    <div id="color-blocks">
-      <div class="color-block" style="background:#3047b6;"></div>
-      <div class="color-block" style="background:#4766b4;"></div>
-      <div class="color-block" style="background:#898dd1;"></div>
+  <div id="logo-wrapper">
+    <div id="logo-frame">
+      <div id="color-blocks">
+        <div class="color-block" style="background:#3047b6;"></div>
+        <div class="color-block" style="background:#4766b4;"></div>
+        <div class="color-block" style="background:#898dd1;"></div>
+      </div>
+      <div id="logo-text">
+        <p id="aigea-text"></p>
+        <p id="dot-org-text"></p>
+      </div>
     </div>
-    <div id="logo-text">
-      <p id="aigea-text"></p>
-      <p id="dot-org-text"></p>
+
+    <div id="maintenance-line">
+      <span id="maintenance-text">Currently under maintenance, being advised by</span>
+      <img id="lse-logo" src="London_school_of_economics_logo_with_name.png" alt="London School of Economics" />
     </div>
   </div>
 
   <script>
     const COLORS       = ['#3047B6', '#4766B4', '#898DD1', '#131313'];
-    const WORDS        = ['Artificial', 'Intelligence', 'Governance', '& Ethics', 'Agency'];
+    const WORDS        = ['Artificial Intelligence Governance & Ethics Agency'];
     const CHARS_LOWER  = 'abcdefghijklmnopqrstuvwxyz';
     const CHARS_UPPER  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const DISPLAY_TIME = 3500;
     const COLOR_DELAY  = 70;
 
-    const wordEl      = document.getElementById('word');
-    const logoFrameEl = document.getElementById('logo-frame');
-    const aigeaEl     = document.getElementById('aigea-text');
-    const dotOrgEl    = document.getElementById('dot-org-text');
+    const wordEl        = document.getElementById('word');
+    const logoWrapperEl = document.getElementById('logo-wrapper');
+    const aigeaEl       = document.getElementById('aigea-text');
+    const dotOrgEl      = document.getElementById('dot-org-text');
+    const maintenanceEl = document.getElementById('maintenance-line');
 
     let wordSpans   = [];
     let aigeaSpans  = [];
@@ -190,7 +259,7 @@
 
         const FRAME   = 45;
         const LEAD    = 380;
-        const STAGGER = 75;
+        const STAGGER = Math.min(75, 1800 / Math.max(target.length, 1));
 
         const locked = new Array(target.length).fill(false);
         let done = 0;
@@ -204,7 +273,7 @@
         target.split('').forEach((ch, i) => {
           setTimeout(() => {
             locked[i] = true;
-            arr[i].textContent = ch;
+            arr[i].textContent = ch === ' ' ? ' ' : ch;
             if (++done === target.length) { clearInterval(iv); resolve(); }
           }, LEAD + i * STAGGER);
         });
@@ -214,13 +283,14 @@
     // ── show / hide ───────────────────────────────────────────────────────────
 
     function showWord() {
-      logoFrameEl.style.display = 'none';
-      wordEl.style.display      = 'block';
+      maintenanceEl.style.opacity = '0';
+      logoWrapperEl.style.display = 'none';
+      wordEl.style.display        = 'block';
     }
 
     function showLogo() {
-      wordEl.style.display      = 'none';
-      logoFrameEl.style.display = 'flex';
+      wordEl.style.display        = 'none';
+      logoWrapperEl.style.display = 'flex';
     }
 
     // ── animations ────────────────────────────────────────────────────────────
@@ -244,6 +314,8 @@
 
       await Promise.all([aigeaDone, dotOrgDone]);
       // No color animation — logo stays #626262
+
+      maintenanceEl.style.opacity = '1';
     }
 
     // ── main loop ─────────────────────────────────────────────────────────────
@@ -251,22 +323,9 @@
     function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     async function run() {
-      let wi = 0;
-
-      await animateWord(WORDS[wi]);
-
-      while (true) {
-        await wait(DISPLAY_TIME);
-        wi++;
-
-        if (wi >= WORDS.length) {
-          await animateLogo();
-          await wait(DISPLAY_TIME);
-          wi = 0;
-        }
-
-        await animateWord(WORDS[wi]);
-      }
+      await animateWord(WORDS[0]);
+      await wait(DISPLAY_TIME);
+      await animateLogo();
     }
 
     setTimeout(run, 600);
